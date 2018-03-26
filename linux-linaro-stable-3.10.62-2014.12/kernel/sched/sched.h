@@ -236,6 +236,19 @@ struct cfs_bandwidth { };
 
 #endif	/* CONFIG_CGROUP_SCHED */
 
+struct mycfs_rq {
+	struct load_weight load;
+	unsigned int nr_running, h_nr_running;
+
+	u64 exec_clock;
+	u64 min_vruntime;
+
+	struct rb_root tasks_timeline;
+	struct rb_node *rb_leftmost;
+
+	struct sched_entity *curr, *next, *last, *skip;
+};
+
 /* CFS-related fields in a runqueue */
 struct cfs_rq {
 	struct load_weight load;
@@ -421,6 +434,8 @@ struct rq {
 	u64 nr_switches;
 
 	struct cfs_rq cfs;
+	/* mycfs runqueue */
+	struct mycfs_rq mycfs;
 	struct rt_rq rt;
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
@@ -1028,6 +1043,7 @@ struct sched_class {
 extern const struct sched_class stop_sched_class;
 extern const struct sched_class rt_sched_class;
 extern const struct sched_class fair_sched_class;
+extern const struct sched_class mycfs_sched_class;
 extern const struct sched_class idle_sched_class;
 
 
@@ -1326,6 +1342,7 @@ extern void print_cfs_stats(struct seq_file *m, int cpu);
 extern void print_rt_stats(struct seq_file *m, int cpu);
 
 extern void init_cfs_rq(struct cfs_rq *cfs_rq);
+extern void init_mycfs_rq(struct mycfs_rq *mycfs_rq);
 extern void init_rt_rq(struct rt_rq *rt_rq, struct rq *rq);
 
 extern void cfs_bandwidth_usage_inc(void);
